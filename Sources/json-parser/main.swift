@@ -19,8 +19,13 @@ if let filePath = Array(arguments[1...]).filter({ !$0.hasPrefix("-") }).first {
     contentLines = content.split(separator: " ")
   }
   print(contentLines)
-  if content.replacingOccurrences(of: "\\s+", with: "", options: .regularExpression).contains(",}")
-  {
+  let contentWithoutNewlinesAndWhitespaces = content.replacingOccurrences(
+    of: "\\s+", with: "", options: .regularExpression)
+
+  if contentWithoutNewlinesAndWhitespaces.contains("{,") {
+    print("invalid symbol in front of opening bracket")
+  }
+  if contentWithoutNewlinesAndWhitespaces.contains(",}") {
     print("invalid symbol in front of closing bracket")
   }
 
