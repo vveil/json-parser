@@ -1,4 +1,5 @@
 import Foundation
+import RegexBuilder
 
 var arguments = CommandLine.arguments
 
@@ -12,6 +13,19 @@ if let filePath = Array(arguments[1...]).filter({ !$0.hasPrefix("-") }).first {
   if content == "{}" {
     print("valid empty json")
     exit(0)
+  }
+
+  let regex = Regex {
+
+    "\""
+    One(.word)
+    "\":"
+
+    Optionally(.whitespace)
+
+    "\""
+    OneOrMore(.word)
+    "\""
   }
 
   var contentLines = content.split(separator: "\n")
