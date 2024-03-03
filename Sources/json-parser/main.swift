@@ -15,18 +15,18 @@ if let filePath = Array(arguments[1...]).filter({ !$0.hasPrefix("-") }).first {
     exit(0)
   }
 
-  let regex = Regex {
+  // let regex = Regex {
 
-    "\""
-    One(.word)
-    "\":"
+  //   "\""
+  //   One(.word)
+  //   "\":"
 
-    Optionally(.whitespace)
+  //   Optionally(.whitespace)
 
-    "\""
-    OneOrMore(.word)
-    "\""
-  }
+  //   "\""
+  //   OneOrMore(.word)
+  //   "\""
+  // }
 
   var contentLines = content.split(separator: "\n")
   if contentLines.count == 1 {
