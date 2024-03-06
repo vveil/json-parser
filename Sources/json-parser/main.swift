@@ -14,19 +14,31 @@ if let filePath = Array(arguments[1...]).filter({ !$0.hasPrefix("-") }).first {
     print("valid empty json")
     exit(0)
   }
+  print(content)
+  // TODO complete regex
+  let regex = Regex {
+    "{"
+    ZeroOrMore {
+      ZeroOrMore("\n")
+      "\""
+      OneOrMore(.word)
+      "\""
+      ZeroOrMore(.any)
+    }
+    "}"
+  }
+  print(content)
+  if let matches = content.wholeMatch(of: regex) {
+    // print(matches)
+    print("valid json")
+    exit(0)
+  }
 
-  // let regex = Regex {
-
-  //   "\""
-  //   One(.word)
-  //   "\":"
-
-  //   Optionally(.whitespace)
-
-  //   "\""
-  //   OneOrMore(.word)
-  //   "\""
-  // }
+  if let match = try? regex.firstMatch(in: content) {
+    print("valid json:")
+    print(match)
+    exit(0)
+  }
 
   var contentLines = content.split(separator: "\n")
   if contentLines.count == 1 {
