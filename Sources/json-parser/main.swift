@@ -14,7 +14,6 @@ if let filePath = Array(arguments[1...]).filter({ !$0.hasPrefix("-") }).first {
     print("valid empty json")
     exit(0)
   }
-  print(content)
   // TODO complete regex
   let regex = Regex {
     "{"
@@ -23,20 +22,28 @@ if let filePath = Array(arguments[1...]).filter({ !$0.hasPrefix("-") }).first {
       "\""
       OneOrMore(.word)
       "\""
-      ZeroOrMore(.any)
+      ZeroOrMore(.whitespace)
+      ":"
+      ZeroOrMore(.whitespace)
+      "\""
+      OneOrMore(.word)
+      "\""
+      // ZeroOrMore(.any)
+      // ZeroOrMore("\n")
     }
+    // ZeroOrMore("\n")
     "}"
   }
   print(content)
   if let matches = content.wholeMatch(of: regex) {
     // print(matches)
-    print("valid json")
+    print("whole match")
     exit(0)
   }
 
   if let match = try? regex.firstMatch(in: content) {
-    print("valid json:")
-    print(match)
+    print("first match")
+    print("match: \(match.0)")
     exit(0)
   }
 
