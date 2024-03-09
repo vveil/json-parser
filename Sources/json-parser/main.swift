@@ -7,6 +7,7 @@ enum JSONState {
   case object
   case string
   case nothing
+  case comma
 }
 
 class JSONValidator {
@@ -19,10 +20,16 @@ class JSONValidator {
       case "{":
         stateStack.append(.object)
       case "}":
+        if stateStack.last == .comma {
+          error.append("Invalid comma at the end of the object")
+        }
         stateStack.removeLast()
         if stateStack == [.nothing] {
           stateStack = []
         }
+      case ",":
+        state = .comma
+        stateStack.append(.comma)
       default:
         break
       }
