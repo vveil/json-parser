@@ -8,6 +8,7 @@ enum JSONState {
   case string
   case nothing
   case comma
+  case colon
 }
 
 class JSONValidator {
@@ -30,6 +31,23 @@ class JSONValidator {
       case ",":
         state = .comma
         stateStack.append(.comma)
+      case "\"":
+        if state == .comma {
+          stateStack.removeLast()
+          stateStack.append(.key)
+          state = .key
+        } else if state == .key {
+          if stateStack.last == .key {
+            stateStack.removeLast()
+          } else {
+            error.append("Keyend outside of key.")
+          }
+        } else if state == .colon {
+          // string start
+        } else if state == .string {
+          // string end
+        }
+
       default:
         break
       }
