@@ -17,32 +17,49 @@ class JSONValidator {
   var error: [String] = []
   func validate(_ content: String) -> [String] {
     for char in content {
+      print("current char: \(char)")
       switch char {
       case "{":
         stateStack.append(.object)
+        state = .object
       case "}":
         if stateStack.last == .comma {
           error.append("Invalid comma at the end of the object")
         }
-        stateStack.removeLast()
+        if stateStack.last == .object {
+          stateStack.removeLast()
+        }
         if stateStack == [.nothing] {
           stateStack = []
         }
       case ",":
         state = .comma
         stateStack.append(.comma)
+      case ":":
+        if state == .string {
+          break
+        }
+        print(": case, curent stateStack: \(stateStack)")
+        if stateStack.last == .key {
+          stateStack.removeLast()
+          state = .colon
+        } else {
+          error.append("invalid colon")
+        }
       case "\"":
-        if state == .comma {
+        if state == .comma || state == .object {
           stateStack.removeLast()
           stateStack.append(.key)
           state = .key
         } else if state == .key {
-          if stateStack.last == .key {
-            stateStack.removeLast()
-          } else {
+          if stateStack.last != .key {
             error.append("Keyend outside of key.")
+            print("keyend error")
           }
         } else if state == .colon {
+          // if state == .colon && stateStack.last != .key {
+          //   error.append("no key given for string start")
+          // }
           // string start
         } else if state == .string {
           // string end
@@ -53,6 +70,7 @@ class JSONValidator {
       }
     }
     if !stateStack.isEmpty {
+      print(stateStack)
       error.append("Invalid JSON")
     }
     return error
