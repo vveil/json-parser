@@ -9,6 +9,7 @@ enum JSONState {
   case nothing
   case comma
   case colon
+  case invalid
 }
 
 class JSONValidator {
@@ -17,14 +18,20 @@ class JSONValidator {
   var error: [String] = []
   func validate(_ content: String) -> [String] {
     for char in content {
-      print("current char: \(char)")
       switch char {
+      case _ where char.isLetter:
+        if stateStack.last == .comma {
+          error.append("Missing \" for key")
+          stateStack.removeLast()
+          state = .invalid
+        }
       case "{":
         stateStack.append(.object)
         state = .object
       case "}":
         if stateStack.last == .comma {
           error.append("Invalid comma at the end of the object")
+          stateStack.removeLast()
         }
         if stateStack.last == .object {
           stateStack.removeLast()
@@ -33,18 +40,20 @@ class JSONValidator {
           stateStack = []
         }
       case ",":
+        if state == .string {
+          break
+        }
         state = .comma
         stateStack.append(.comma)
       case ":":
         if state == .string {
           break
         }
-        print(": case, curent stateStack: \(stateStack)")
         if stateStack.last == .key {
           stateStack.removeLast()
           state = .colon
-        } else {
-          error.append("invalid colon")
+        } else if state != .invalid {
+          error.append("Invalid colon")
         }
       case "\"":
         if state == .comma || state == .object {
@@ -54,7 +63,6 @@ class JSONValidator {
         } else if state == .key {
           if stateStack.last != .key {
             error.append("Keyend outside of key.")
-            print("keyend error")
           }
         } else if state == .colon {
           // if state == .colon && stateStack.last != .key {
@@ -70,7 +78,7 @@ class JSONValidator {
       }
     }
     if !stateStack.isEmpty {
-      print(stateStack)
+      print("stateStack at the end: \(stateStack)")
       error.append("Invalid JSON")
     }
     return error
