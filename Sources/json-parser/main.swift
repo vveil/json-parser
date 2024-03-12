@@ -1,6 +1,20 @@
 import Foundation
 import RegexBuilder
 
+extension String {
+  subscript(index: Int) -> Character {
+    let charIndex = self.index(self.startIndex, offsetBy: index)
+    return self[charIndex]
+  }
+
+  subscript(range: Range<Int>) -> Substring {
+    let startIndex = self.index(self.startIndex, offsetBy: range.startIndex)
+    let stopIndex = self.index(self.startIndex, offsetBy: range.startIndex + range.count)
+    return self[startIndex..<stopIndex]
+  }
+
+}
+
 enum JSONState {
   case key
   case value
@@ -10,21 +24,36 @@ enum JSONState {
   case comma
   case colon
   case invalid
+  case boolTrue
+  case boolFalse
 }
+
+let trueLetters = ["t", "r", "u", "e"]
 
 class JSONValidator {
   var stateStack: [JSONState] = [.nothing]
   var state: JSONState = .nothing
   var error: [String] = []
   func validate(_ content: String) -> [String] {
-    for char in content {
+    for (i, char) in content.enumerated() {
       switch char {
       case _ where char.isLetter:
         if stateStack.last == .comma {
           error.append("Missing \" for key")
           stateStack.removeLast()
           state = .invalid
+          break
+        } else if trueLetters.contains(String(char)) && stateStack.last == .boolTrue {
+          break
         }
+        if char == "t" && stateStack.last != .string {
+          print(content[i..<i + 4])
+          if content[i..<i + 5] == "true," {
+            stateStack.append(.boolTrue)
+            print("valid true")
+          }
+        }
+
       case "{":
         stateStack.append(.object)
         state = .object
@@ -42,6 +71,8 @@ class JSONValidator {
       case ",":
         if state == .string {
           break
+        } else if stateStack.last == .boolTrue || stateStack.last == .boolFalse {
+          stateStack.removeLast()
         }
         state = .comma
         stateStack.append(.comma)
