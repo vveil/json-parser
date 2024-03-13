@@ -29,6 +29,7 @@ enum JSONState {
 }
 
 let trueLetters = ["t", "r", "u", "e"]
+let falseLetters = ["f", "a", "l", "s", "e"]
 
 class JSONValidator {
   var stateStack: [JSONState] = [.nothing]
@@ -43,14 +44,23 @@ class JSONValidator {
           stateStack.removeLast()
           state = .invalid
           break
-        } else if trueLetters.contains(String(char)) && stateStack.last == .boolTrue {
+        } else if (trueLetters.contains(String(char)) && stateStack.last == .boolTrue)
+          || (falseLetters.contains(String(char)) && stateStack.last == .boolFalse)
+        {
           break
         }
-        if char == "t" && stateStack.last != .string {
-          print(content[i..<i + 4])
-          if content[i..<i + 5] == "true," {
-            stateStack.append(.boolTrue)
-            print("valid true")
+        if stateStack.last != .string {
+          if char == "t" {
+            print(content[i..<i + 4])
+            if content[i..<i + 5] == "true," {
+              stateStack.append(.boolTrue)
+              print("valid true")
+            }
+          } else if char == "f" {
+            if content[i..<i + 6] == "false," {
+              stateStack.append(.boolFalse)
+              print("valid false")
+            }
           }
         }
 
