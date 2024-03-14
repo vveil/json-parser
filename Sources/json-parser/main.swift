@@ -48,6 +48,8 @@ class JSONValidator {
           || (falseLetters.contains(String(char)) && stateStack.last == .boolFalse)
         {
           break
+        } else if stateStack.last == .colon {
+          error.append("Missing \" for (string)value")
         }
         if stateStack.last != .string {
           if char == "t" {
@@ -93,6 +95,7 @@ class JSONValidator {
         if stateStack.last == .key {
           stateStack.removeLast()
           state = .colon
+          stateStack.append(.colon)
         } else if state != .invalid {
           error.append("Invalid colon")
         }
@@ -105,7 +108,9 @@ class JSONValidator {
           if stateStack.last != .key {
             error.append("Keyend outside of key.")
           }
-        } else if state == .colon {
+        } else if stateStack.last == .colon {
+          stateStack.removeLast()
+          stateStack.append(.string)
           // if state == .colon && stateStack.last != .key {
           //   error.append("no key given for string start")
           // }
