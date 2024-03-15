@@ -48,8 +48,6 @@ class JSONValidator {
           || (falseLetters.contains(String(char)) && stateStack.last == .boolFalse)
         {
           break
-        } else if stateStack.last == .colon {
-          error.append("Missing \" for (string)value")
         }
         if stateStack.last != .string {
           if char == "t" {
@@ -63,6 +61,9 @@ class JSONValidator {
               stateStack.append(.boolFalse)
               print("valid false")
             }
+          } else if stateStack.last == .colon {
+            error.append("Missing \" for (string)value")
+            stateStack.append(.invalid)
           }
         }
 
@@ -83,7 +84,9 @@ class JSONValidator {
       case ",":
         if state == .string {
           break
-        } else if stateStack.last == .boolTrue || stateStack.last == .boolFalse {
+        } else if stateStack.last == .boolTrue || stateStack.last == .boolFalse
+          || stateStack.last == .invalid
+        {
           stateStack.removeLast()
         }
         state = .comma
