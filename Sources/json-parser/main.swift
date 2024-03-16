@@ -118,8 +118,8 @@ class JSONValidator {
           //   error.append("no key given for string start")
           // }
           // string start
-        } else if state == .string {
-          // string end
+        } else if stateStack.last == .string {
+          stateStack.removeLast()
         }
 
       default:
