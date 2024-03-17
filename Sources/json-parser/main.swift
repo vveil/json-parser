@@ -89,7 +89,6 @@ class JSONValidator {
         {
           stateStack.removeLast()
         }
-        state = .comma
         stateStack.append(.comma)
       case ":":
         if state == .string {
@@ -114,10 +113,6 @@ class JSONValidator {
         } else if stateStack.last == .colon {
           stateStack.removeLast()
           stateStack.append(.string)
-          // if state == .colon && stateStack.last != .key {
-          //   error.append("no key given for string start")
-          // }
-          // string start
         } else if stateStack.last == .string {
           stateStack.removeLast()
         }
