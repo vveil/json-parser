@@ -82,7 +82,7 @@ class JSONValidator {
           stateStack = []
         }
       case ",":
-        if state == .string {
+        if stateStack.last == .string {
           break
         } else if stateStack.last == .boolTrue || stateStack.last == .boolFalse
           || stateStack.last == .invalid
@@ -91,7 +91,7 @@ class JSONValidator {
         }
         stateStack.append(.comma)
       case ":":
-        if state == .string {
+        if stateStack.last == .string {
           break
         }
         if stateStack.last == .key {
