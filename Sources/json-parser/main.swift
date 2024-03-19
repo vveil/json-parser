@@ -88,8 +88,12 @@ class JSONValidator {
           || stateStack.last == .invalid
         {
           stateStack.removeLast()
+          if stateStack.last == .colon {
+            stateStack.removeLast()
+          }
         }
         stateStack.append(.comma)
+        print("after comma")
       case ":":
         if stateStack.last == .string {
           break
@@ -102,6 +106,7 @@ class JSONValidator {
           error.append("Invalid colon")
         }
       case "\"":
+        print("lastState before \": \(stateStack)")
         if state == .comma || state == .object {
           stateStack.removeLast()
           stateStack.append(.key)
