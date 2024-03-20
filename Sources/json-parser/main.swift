@@ -107,7 +107,7 @@ class JSONValidator {
         }
       case "\"":
         print("lastState before \": \(stateStack)")
-        if state == .comma || state == .object {
+        if stateStack.last == .comma || stateStack.last == .object {
           stateStack.removeLast()
           stateStack.append(.key)
           state = .key
