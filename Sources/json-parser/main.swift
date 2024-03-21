@@ -72,7 +72,7 @@ class JSONValidator {
         state = .object
       case "}":
         if stateStack.last == .comma {
-          error.append("Invalid comma at the end of the object")
+          error.append("Invalid comma at the end of the object.")
           stateStack.removeLast()
         }
         if stateStack.last == .object {
