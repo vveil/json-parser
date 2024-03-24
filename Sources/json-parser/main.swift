@@ -93,7 +93,6 @@ class JSONValidator {
           }
         }
         stateStack.append(.comma)
-        print("after comma")
       case ":":
         if stateStack.last == .string {
           break
