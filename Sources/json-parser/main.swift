@@ -34,17 +34,33 @@ class JSONValidator {
   func validate(_ content: String) -> [String] {
     if content.first == "{" {
       var it = 0
-      while it < content.count + 1 && content[it] != "}" {
+      while it < content.count && content[it] != "}" {
         it = it + 1
         while content[it].isWhitespace || content[it].isWhitespace {
           it = it + 1
         }
         if content[it] == "}" {
-          break
-        } else if content[it] != "\"" {
-          error.append("Expected \" and key")
+          continue
+        } else if content[it] == "\"" {
+          it = it + 1
+          while content[it] != "\"" {
+            if !content[it].isLetter && !content[it].isNumber {
+              error.append("invalid character")
+            }
+            it = it + 1
+          }
+        } else if content[it] == "," {
+          if content[it + 1] == "}" {
+            error.append("invalid , at object end")
+          }
+          it = it + 1
+        } else if content[it] == ":" {
+          it = it + 1
         } else {
-          // ...
+          error.append("Expected \" and key")
+          while content[it] != ":" && content[it] != "," {
+            it = it + 1
+          }
         }
       }
     }
