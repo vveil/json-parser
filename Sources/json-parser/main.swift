@@ -14,19 +14,6 @@ extension String {
   }
 }
 
-// enum JSONState {
-//   case key
-//   case value
-//   case object
-//   case string
-//   case nothing
-//   case comma
-//   case colon
-//   case invalid
-//   case boolTrue
-//   case boolFalse
-// }
-
 class JSONValidator {
 
   var error: [String] = []
@@ -57,9 +44,24 @@ class JSONValidator {
         } else if content[it] == ":" {
           it = it + 1
         } else {
-          error.append("Expected \" and key")
-          while content[it] != ":" && content[it] != "," {
-            it = it + 1
+          if content[it].isLetter {
+            if content[it] == "t" && content[it..<it + 4] == "true" {
+              print("true")
+              it = it + 4
+            } else if content[it] == "f" && content[it..<it + 5] == "false" {
+              print("false")
+              it = it + 5
+            }
+          } else if content[it].isNumber {
+            print("number")
+            while content[it] != "," && content[it] != "}" {
+              it = it + 1
+            }
+          } else {
+            error.append("Expected \" and key")
+            while content[it] != ":" && content[it] != "," {
+              it = it + 1
+            }
           }
         }
       }
