@@ -16,51 +16,75 @@ extension String {
 
 class JSONValidator {
 
+  var content = ""
   var error: [String] = []
+  var it = 0
 
-  func validate(_ content: String) -> [String] {
+  init(content: String) {
+    self.content = content
+  }
+
+  func increaseIt() {
+    it = it + 1
+  }
+
+  func skipToCommaOrCurlyBrace() {
+    while content[it] != "," && content[it] != "}" {
+      increaseIt()
+    }
+  }
+
+  func skipWhitespaces() {
+    while content[it].isWhitespace || content[it].isNewline {
+      increaseIt()
+    }
+  }
+
+  func getLastCharExceptWhitespaces() -> Character {
+    var tmpIt = it - 1
+    while content[tmpIt].isWhitespace || content[tmpIt].isNewline {
+      tmpIt = tmpIt - 1
+    }
+    return content[tmpIt]
+  }
+
+  func validate() -> [String] {
     if content.first == "{" {
-      var it = 0
       while it < content.count && content[it] != "}" {
-        it = it + 1
-        while content[it].isWhitespace || content[it].isWhitespace {
-          it = it + 1
-        }
+        increaseIt()
+        skipWhitespaces()
         if content[it] == "}" {
           continue
         } else if content[it] == "\"" {
-          it = it + 1
+          increaseIt()
           while content[it] != "\"" {
             if !content[it].isLetter && !content[it].isNumber {
               error.append("invalid character")
             }
-            it = it + 1
+            increaseIt()
           }
         } else if content[it] == "," {
           if content[it + 1] == "}" {
             error.append("invalid , at object end")
           }
-          it = it + 1
+          increaseIt()
         } else if content[it] == ":" {
-          it = it + 1
+          increaseIt()
         } else {
-          if content[it].isLetter {
-            if content[it] == "t" && content[it..<it + 4] == "true" {
-              print("true")
-              it = it + 4
-            } else if content[it] == "f" && content[it..<it + 5] == "false" {
-              print("false")
-              it = it + 5
+          if content[it].isLetter && getLastCharExceptWhitespaces() == ":" {
+            if !((content[it] == "t" && content[it..<it + 5] == "true,")
+              || (content[it] == "n" && content[it..<it + 5] == "null,")
+              || (content[it] == "f" && content[it..<it + 6] == "false,"))
+            {
+              error.append("Expected value")
             }
+            skipToCommaOrCurlyBrace()
           } else if content[it].isNumber {
-            print("number")
-            while content[it] != "," && content[it] != "}" {
-              it = it + 1
-            }
+            skipToCommaOrCurlyBrace()
           } else {
             error.append("Expected \" and key")
             while content[it] != ":" && content[it] != "," {
-              it = it + 1
+              increaseIt()
             }
           }
         }
@@ -80,10 +104,11 @@ if let filePath = Array(arguments[1...]).filter({ !$0.hasPrefix("-") }).first {
     content = fileContent
   }
 
-  let error = JSONValidator().validate(content)
+  let error = JSONValidator(content: content).validate()
   if error.isEmpty {
     print("Valid JSON")
   } else {
+    print("Invalid JSON, occured errors:")
     print(error.joined(separator: "\n"))
   }
 
