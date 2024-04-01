@@ -36,6 +36,9 @@ class JSONValidator {
 
   func skipWhitespaces() {
     while content[it].isWhitespace || content[it].isNewline {
+      if it >= content.count {
+        break
+      }
       increaseIt()
     }
   }
@@ -48,46 +51,65 @@ class JSONValidator {
     return content[tmpIt]
   }
 
-  func validate() -> [String] {
-    if content.first == "{" {
-      while it < content.count && content[it] != "}" {
+  func parseObject() {
+    print("in parseObject")
+    while content[it] != "}" {
+      print("it \(it) content \(content[it - 3..<it])")
+      if content[it] == "\"" {
         increaseIt()
-        skipWhitespaces()
-        if content[it] == "}" {
-          continue
-        } else if content[it] == "\"" {
+        while content[it] != "\"" {
+          if !content[it].isLetter && !content[it].isNumber {
+            error.append("invalid character")
+          }
           increaseIt()
-          while content[it] != "\"" {
-            if !content[it].isLetter && !content[it].isNumber {
-              error.append("invalid character")
-            }
+        }
+      } else if content[it] == "," {
+        if content[it + 1] == "}" {
+          error.append("invalid , at object end")
+        }
+        increaseIt()
+      } else if content[it] == ":" {
+        increaseIt()
+      } else {
+        if content[it].isLetter && getLastCharExceptWhitespaces() == ":" {
+          if !((content[it] == "t" && content[it..<it + 5] == "true,")
+            || (content[it] == "n" && content[it..<it + 5] == "null,")
+            || (content[it] == "f" && content[it..<it + 6] == "false,"))
+          {
+            error.append("Expected value")
+          }
+          skipToCommaOrCurlyBrace()
+        } else if content[it].isNumber {
+          skipToCommaOrCurlyBrace()
+        } else {
+          error.append("Expected \" and key")
+          while content[it] != ":" && content[it] != "," {
             increaseIt()
           }
-        } else if content[it] == "," {
-          if content[it + 1] == "}" {
-            error.append("invalid , at object end")
-          }
-          increaseIt()
-        } else if content[it] == ":" {
-          increaseIt()
-        } else {
-          if content[it].isLetter && getLastCharExceptWhitespaces() == ":" {
-            if !((content[it] == "t" && content[it..<it + 5] == "true,")
-              || (content[it] == "n" && content[it..<it + 5] == "null,")
-              || (content[it] == "f" && content[it..<it + 6] == "false,"))
-            {
-              error.append("Expected value")
-            }
-            skipToCommaOrCurlyBrace()
-          } else if content[it].isNumber {
-            skipToCommaOrCurlyBrace()
-          } else {
-            error.append("Expected \" and key")
-            while content[it] != ":" && content[it] != "," {
-              increaseIt()
-            }
-          }
         }
+      }
+    }
+  }
+
+  func validate() -> [String] {
+    if content.first == "{" {
+      while it < content.count {
+        increaseIt()
+        skipWhitespaces()
+        if it >= content.count {
+          break
+        }
+        if content[it] == "}" {
+          continue
+        } else if content[it] == "{" {
+          if getLastCharExceptWhitespaces() != ":" {
+            error.append("Expected key")
+            continue
+          }
+          increaseIt()
+          parseObject()
+        }
+        parseObject()
       }
     }
     return error
