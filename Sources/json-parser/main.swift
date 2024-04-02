@@ -24,22 +24,25 @@ class JSONValidator {
     self.content = content
   }
 
-  func increaseIt() {
+  func increaseIt(callFrom: String) {
     it = it + 1
   }
 
   func skipToCommaOrCurlyBrace() {
     while content[it] != "," && content[it] != "}" {
-      increaseIt()
+      increaseIt(callFrom: "skipToCommaOrCurlyBrace")
     }
   }
 
   func skipWhitespaces() {
+    if it >= content.count {
+      return
+    }
     while content[it].isWhitespace || content[it].isNewline {
       if it >= content.count {
         break
       }
-      increaseIt()
+      increaseIt(callFrom: "skipWhitespaces")
     }
   }
 
@@ -54,22 +57,23 @@ class JSONValidator {
   func parseObject() {
     print("in parseObject")
     while content[it] != "}" {
-      print("it \(it) content \(content[it - 3..<it])")
       if content[it] == "\"" {
-        increaseIt()
+        increaseIt(callFrom: "1 \"")
         while content[it] != "\"" {
           if !content[it].isLetter && !content[it].isNumber {
             error.append("invalid character")
           }
-          increaseIt()
+          increaseIt(callFrom: "2 \"")
         }
+        increaseIt(callFrom: "3 \"")
       } else if content[it] == "," {
         if content[it + 1] == "}" {
           error.append("invalid , at object end")
         }
-        increaseIt()
+        increaseIt(callFrom: ",")
       } else if content[it] == ":" {
-        increaseIt()
+        increaseIt(callFrom: ":")
+        skipWhitespaces()
       } else {
         if content[it].isLetter && getLastCharExceptWhitespaces() == ":" {
           if !((content[it] == "t" && content[it..<it + 5] == "true,")
@@ -84,7 +88,7 @@ class JSONValidator {
         } else {
           error.append("Expected \" and key")
           while content[it] != ":" && content[it] != "," {
-            increaseIt()
+            increaseIt(callFrom: "Expected \" and key")
           }
         }
       }
@@ -94,7 +98,7 @@ class JSONValidator {
   func validate() -> [String] {
     if content.first == "{" {
       while it < content.count {
-        increaseIt()
+        increaseIt(callFrom: "validate")
         skipWhitespaces()
         if it >= content.count {
           break
@@ -106,7 +110,7 @@ class JSONValidator {
             error.append("Expected key")
             continue
           }
-          increaseIt()
+          increaseIt(callFrom: "{")
           parseObject()
         }
         parseObject()
