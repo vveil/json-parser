@@ -87,7 +87,7 @@ class JSONValidator {
           skipToCommaOrCurlyBrace()
         } else {
           error.append("Expected \" and key")
-          print("content[it] on key error: \(content[it])")
+          print("content[it] on key error: \(content[it - 5..<it])")
           while content[it] != ":" && content[it] != "," {
             increaseIt(callFrom: "Expected \" and key")
           }
