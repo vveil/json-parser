@@ -57,6 +57,7 @@ class JSONValidator {
   func parseObject() {
     print("in parseObject")
     while content[it] != "}" {
+      skipWhitespaces()
       if content[it] == "\"" {
         increaseIt(callFrom: "1 \"")
         while content[it] != "\"" {
