@@ -56,17 +56,19 @@ class JSONValidator {
 
   func parseObject() {
     print("in parseObject")
+    print("current char in parseObject: \(content[it])")
     while content[it] != "}" {
       skipWhitespaces()
       if content[it] == "\"" {
         increaseIt(callFrom: "1 \"")
         while content[it] != "\"" {
-          if !content[it].isLetter && !content[it].isNumber {
-            error.append("invalid character")
-          }
+          // if !content[it].isLetter && !content[it].isNumber {
+          //   error.append("invalid character")
+          // }
           increaseIt(callFrom: "2 \"")
         }
         increaseIt(callFrom: "3 \"")
+        print("char at it: \(content[it])")
       } else if content[it] == "," {
         if content[it + 1] == "}" {
           error.append("invalid , at object end")
@@ -74,7 +76,15 @@ class JSONValidator {
         increaseIt(callFrom: ",")
       } else if content[it] == ":" {
         increaseIt(callFrom: ":")
-        skipWhitespaces()
+        print("char at it: \(content[it])")
+      } else if content[it] == "{" {
+        print("object in parseObject")
+        increaseIt(callFrom: "{ inside parseObject")
+        parseObject()
+      } else if content[it] == "[" {
+        while content[it - 1] != "]" {
+          increaseIt(callFrom: "[")
+        }
       } else {
         if content[it].isLetter && getLastCharExceptWhitespaces() == ":" {
           if !((content[it] == "t" && content[it..<it + 5] == "true,")
@@ -100,12 +110,14 @@ class JSONValidator {
   func validate() -> [String] {
     if content.first == "{" {
       while it < content.count {
-        increaseIt(callFrom: "validate")
-        skipWhitespaces()
+        // increaseIt(callFrom: "validate")
+        // skipWhitespaces()
         if it >= content.count {
           break
         }
+        parseObject()
         if content[it] == "}" {
+          increaseIt(callFrom: "}")
           continue
         } else if content[it] == "{" {
           if getLastCharExceptWhitespaces() != ":" {
@@ -113,9 +125,9 @@ class JSONValidator {
             continue
           }
           increaseIt(callFrom: "{")
+          print("before parseObject")
           parseObject()
         }
-        parseObject()
       }
     }
     return error
